@@ -30,12 +30,12 @@ jobs:
 
 ## Inputs
 
-| Input       | Default | Description                                                                          |
-|-------------|---------|--------------------------------------------------------------------------------------|
-| `base_url`  | N/A     | Base URL of the Martini instance                                                     |
-| `user_name` | N/A     | Name of a user on the Martini instance that should be used for uploading the package |
-| `base_url`  | N/A     | The user's password                                                                  |
-| `base_url`  | N/A     | Path to a directory that contains the package's files                                |
+| Input           | Default | Description                                                                          |
+|-----------------|---------|--------------------------------------------------------------------------------------|
+| `base_url`      | N/A     | Base URL of the Martini instance                                                     |
+| `user_name`     | N/A     | Name of a user on the Martini instance that should be used for uploading the package |
+| `user_password` | N/A     | The user's password                                                                  |
+| `package_dir`   | N/A     | Path to a directory that contains the package's files                                |
 
 ## Outputs
 
