@@ -1,0 +1,32 @@
+{
+  "name": "martini-upload-package-action",
+  "author": {
+    "email": "rafal.janicki@torocloud.com",
+    "name": "Rafal Janicki"
+  },
+  "version": "1.0.0",
+  "description": "Prepares and uploads a package to a Martini instance",
+  "main": "index.js",
+  "scripts": {
+    "package": "ncc build index.js -o dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/torocloud/martini-upload-package-action.git"
+  },
+  "bugs": {
+    "url": "https://github.com/torocloud/martini-upload-package-action/issues"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.38.1",
+    "prettier": "3.3.3"
+  },
+  "private": true,
+  "prettier": {
+    "singleQuote": true
+  },
+  "dependencies": {
+    "@actions/core": "^1.10.1",
+    "archiver": "^7.0.1"
+  }
+}

@@ -1,0 +1,28 @@
+name: 'Martini Upload Package'
+description: 'Prepares and uploads a package to a Martini instance'
+author: 'Rafal Janicki <rafal.janicki@torocloud.com>'
+inputs:
+  base_url:
+    description: 'Base URL of the Martini instance'
+    required: true
+  user_name:
+    description: 'Name of a user on the Martini instance that should be used for uploading the package'
+    required: true
+  user_password:
+    description: "The user's password"
+    required: true
+  package_dir:
+    description: "Path to a directory that contains the package's files"
+    required: true
+outputs:
+  id:
+    description: 'ID of the uploaded package'
+  name:
+    description: 'Name of the uploaded package'
+  status:
+    description: 'Status of the uploaded package'
+  version:
+    description: 'Version of the uploaded package'
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
