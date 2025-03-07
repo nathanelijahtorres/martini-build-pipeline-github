@@ -8,9 +8,11 @@ inputs:
   client_id:
     description: 'Client ID of the Martini instance'
     required: false
+    default: ''
   client_secret:
     description: 'Client Secret of the Martini instance'
     required: false
+    default: ''
   user_name:
     description: 'Name of a user on the Martini instance that should be used for uploading the package'
     required: true
