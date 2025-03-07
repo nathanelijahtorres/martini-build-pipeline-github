@@ -23,6 +23,8 @@ jobs:
         uses: actions/martini-upload-package-action@main
         with:
           base_url: "http://localhost:8080"
+          client_id: "myclientid"
+          client_secret: "myclientsecret"
           user_name: "myuser"
           user_password: "mycomplexpassword"
           package_dir: "packages/sample-package"
@@ -30,12 +32,16 @@ jobs:
 
 ## Inputs
 
-| Input           | Default | Description                                                                          |
-|-----------------|---------|--------------------------------------------------------------------------------------|
-| `base_url`      | N/A     | Base URL of the Martini instance                                                     |
-| `user_name`     | N/A     | Name of a user on the Martini instance that should be used for uploading the package |
-| `user_password` | N/A     | The user's password                                                                  |
-| `package_dir`   | N/A     | Path to a directory that contains the package's files                                |
+## Inputs
+
+| Input           | Default      | Required | Description                                                                          |
+|-----------------|--------------|----------|--------------------------------------------------------------------------------------|
+| `base_url`      | N/A          | Yes      | Base URL of the Martini instance                                                     |
+| `client_id`     | `TOROMartini`| No       | Client ID of the Martini instance. If omitted, defaults to `TOROMartini`             |
+| `client_secret` | N/A          | No       | Client Secret of the Martini instance                                                 |
+| `user_name`     | N/A          | Yes      | Name of a user on the Martini instance that should be used for uploading the package |
+| `user_password` | N/A          | Yes      | The user's password                                                                  |
+| `package_dir`   | N/A          | Yes      | Path to a directory that contains the package's files                                |
 
 ## Outputs
 

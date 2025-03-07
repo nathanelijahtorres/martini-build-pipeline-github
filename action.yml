@@ -5,6 +5,12 @@ inputs:
   base_url:
     description: 'Base URL of the Martini instance'
     required: true
+  client_id:
+    description: 'Client ID of the Martini instance'
+    required: false
+  client_secret:
+    description: 'Client Secret of the Martini instance'
+    required: false
   user_name:
     description: 'Name of a user on the Martini instance that should be used for uploading the package'
     required: true
