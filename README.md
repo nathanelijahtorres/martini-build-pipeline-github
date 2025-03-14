@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Upload the package
-        uses: actions/martini-upload-package-action@main
+        uses: lontiplatform/martini-upload-package-action@main
         with:
           base_url: "http://localhost:8080"
           client_id: "myclientid"
