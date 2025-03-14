@@ -8,6 +8,12 @@ const MARTINI_BASE_URL = core.getInput('base_url', {
     required: true,
 });
 
+const MARTINI_CLIENT_ID = core.getInput('client_id') || 'TOROMartini';
+
+const MARTINI_CLIENT_SECRET = core.getInput('client_secret', {
+    required: false,
+});
+
 const MARTINI_USER_NAME = core.getInput('user_name', {
     required: true,
 });
@@ -25,8 +31,8 @@ const ZIP_PATH = __dirname + `/${PACKAGE_NAME}.zip`;
 
 async function uploadPackage() {
     const tokenParams = new URLSearchParams();
-    tokenParams.append('client_id', 'TOROMartini');
-    tokenParams.append('client_secret', 'TOROMartini');
+    tokenParams.append('client_id', MARTINI_CLIENT_ID);
+    tokenParams.append('client_secret', MARTINI_CLIENT_SECRET);
     tokenParams.append('grant_type', 'password');
     tokenParams.append('password', MARTINI_USER_PASSWORD);
     tokenParams.append('username', MARTINI_USER_NAME);
