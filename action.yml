@@ -5,19 +5,8 @@ inputs:
   base_url:
     description: 'Base URL of the Martini instance'
     required: true
-  client_id:
-    description: 'Client ID of the Martini instance'
-    required: false
-    default: ''
-  client_secret:
-    description: 'Client Secret of the Martini instance'
-    required: false
-    default: ''
-  user_name:
-    description: 'Name of a user on the Martini instance that should be used for uploading the package'
-    required: true
-  user_password:
-    description: "The user's password"
+  access_token:
+    description: "Access token of Martini which can be obtained from your instance or Lonti Console"
     required: true
   package_dir:
     description: "Path to a directory that contains the package's files"
