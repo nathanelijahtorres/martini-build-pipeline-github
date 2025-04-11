@@ -10,7 +10,8 @@ inputs:
     required: true
   package_dir:
     description: "Path to a directory that contains the package's files"
-    required: true
+    required: false
+    default: 'packages'
 outputs:
   id:
     description: 'ID of the uploaded package'
