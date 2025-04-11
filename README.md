@@ -24,7 +24,6 @@ jobs:
         with:
           base_url: "http://localhost:8080"
           access_token: "myaccesstoken"
-          package_dir: "packages/sample-package"
 ```
 
 ## Inputs
@@ -33,7 +32,7 @@ jobs:
 |-----------------|--------------|----------|--------------------------------------------------------------------------------------|
 | `base_url`      | N/A          | Yes      | Base URL of the Martini instance                                                     |
 | `access_token`  | N/A          | Yes      | Access token of Martini which can be obtained from your instance or Lonti Console    |
-| `package_dir`   | N/A          | Yes      | Path to a directory that contains the package's files                                |
+| `package_dir`   | packages     | No       | Path to a directory that contains the package's files                                |
 
 ## Outputs
 
