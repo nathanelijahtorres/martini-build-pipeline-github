@@ -1,7 +1,7 @@
 # Martini upload package action
 
 This action zips and uploads a Martini package to a Martini instance. For an example package and usage please refer to
-the [sample repository](https://github.com/torocloud/sample-martini-repository)
+the [sample repository](https://github.com/lontiplatform/martini-build-pipeline-github)
 
 ## Usage
 
@@ -23,24 +23,16 @@ jobs:
         uses: lontiplatform/martini-upload-package-action@main
         with:
           base_url: "http://localhost:8080"
-          client_id: "myclientid"
-          client_secret: "myclientsecret"
-          user_name: "myuser"
-          user_password: "mycomplexpassword"
+          access_token: "myaccesstoken"
           package_dir: "packages/sample-package"
 ```
-
-## Inputs
 
 ## Inputs
 
 | Input           | Default      | Required | Description                                                                          |
 |-----------------|--------------|----------|--------------------------------------------------------------------------------------|
 | `base_url`      | N/A          | Yes      | Base URL of the Martini instance                                                     |
-| `client_id`     | `TOROMartini`| No       | Client ID of the Martini instance. If omitted, defaults to `TOROMartini`             |
-| `client_secret` | N/A          | No       | Client Secret of the Martini instance                                                 |
-| `user_name`     | N/A          | Yes      | Name of a user on the Martini instance that should be used for uploading the package |
-| `user_password` | N/A          | Yes      | The user's password                                                                  |
+| `access_token`  | N/A          | Yes      | Access token of Martini which can be obtained from your instance or Lonti Console    |
 | `package_dir`   | N/A          | Yes      | Path to a directory that contains the package's files                                |
 
 ## Outputs
