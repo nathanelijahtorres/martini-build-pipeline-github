@@ -28,11 +28,12 @@ jobs:
 
 ## Inputs
 
-| Input           | Default      | Required | Description                                                                          |
-|-----------------|--------------|----------|--------------------------------------------------------------------------------------|
-| `base_url`      | N/A          | Yes      | Base URL of the Martini instance                                                     |
-| `access_token`  | N/A          | Yes      | Access token of Martini which can be obtained from your instance or Lonti Console    |
-| `package_dir`   | packages     | No       | Path to a directory that contains the package's files                                |
+| Input              | Default     | Required | Description                                                                                                                                               |
+|--------------------|-------------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `base_url`         | N/A         | Yes      | The base URL of your Martini instance.                                                                                                                    |
+| `access_token`     | N/A         | Yes      | The access token for your Martini instance. You can obtain this from the instance directly or via the Lonti Console.                                      |
+| `package_dir`      | `packages`  | No       | The path to the directory containing package folders.                                                                                                     |
+| `allowed_packages` | N/A         | No       | A comma-separated list of specific package names to upload (e.g., `package2, package3`). If not provided, all packages in the directory will be uploaded. |
 
 ## Outputs
 
