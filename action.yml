@@ -12,6 +12,10 @@ inputs:
     description: "Path to a directory that contains the package's files"
     required: false
     default: 'packages'
+  allowed_packages:
+    description: "Comma-separated list of package names to upload. If not provided, all packages in the directory will be uploaded."
+    required: false
+    default: ''
 outputs:
   id:
     description: 'ID of the uploaded package'
