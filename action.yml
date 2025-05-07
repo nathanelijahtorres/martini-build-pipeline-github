@@ -1,30 +1,31 @@
 name: 'Martini Upload Package'
-description: 'Prepares and uploads a package to a Martini instance'
+description: 'Prepares and uploads packages to a Martini instance'
 author: 'Rafal Janicki <rafal.janicki@torocloud.com>'
+
 inputs:
-  base_url:
+  BASE_URL:
     description: 'Base URL of the Martini instance'
     required: true
-  access_token:
-    description: "Access token of Martini which can be obtained from your instance or Lonti Console"
+  MARTINI_ACCESS_TOKEN:
+    description: 'Access token of the Martini instance'
     required: true
-  package_dir:
-    description: "Path to a directory that contains the package's files"
+  PACKAGE_DIR:
+    description: 'Path to the directory containing package folders'
     required: false
     default: 'packages'
-  allowed_packages:
-    description: "Comma-separated list of package names to upload. If not provided, all packages in the directory will be uploaded."
+  PACKAGE_NAME_PATTERN:
+    description: 'Regex pattern to match package directories'
+    required: false
+    default: '.*'
+  MAX_ATTEMPTS:
+    description: 'Max number of polling attempts for package status'
+    required: false
+    default: '6'
+  POLL_PACKAGE:
+    description: 'Name of a specific package to poll (optional)'
     required: false
     default: ''
-outputs:
-  id:
-    description: 'ID of the uploaded package'
-  name:
-    description: 'Name of the uploaded package'
-  status:
-    description: 'Status of the uploaded package'
-  version:
-    description: 'Version of the uploaded package'
+
 runs:
   using: 'node20'
   main: 'dist/index.js'
