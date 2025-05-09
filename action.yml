@@ -6,7 +6,7 @@ inputs:
   base_url:
     description: 'Base URL of the Martini instance'
     required: true
-  martini_access_token:
+  access_token:
     description: 'Access token of the Martini instance'
     required: true
   package_dir:
