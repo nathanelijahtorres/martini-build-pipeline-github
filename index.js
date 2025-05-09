@@ -12,7 +12,7 @@ function log(level, message) {
 async function main() {
   try {
     const BASE_URL = core.getInput('base_url');
-    const MARTINI_ACCESS_TOKEN = core.getInput('martini_access_token');
+    const MARTINI_ACCESS_TOKEN = core.getInput('access_token');
     const PACKAGE_DIR = core.getInput('package_dir') || 'packages';
     const PACKAGE_NAME_PATTERN = core.getInput('package_name_pattern') || '.*';
     const ASYNC_UPLOAD = core.getInput('async_upload') === 'true';
