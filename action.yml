@@ -17,12 +17,20 @@ inputs:
     description: 'Regex pattern to match package directories'
     required: false
     default: '.*'
-  MAX_ATTEMPTS:
-    description: 'Max number of polling attempts for package status'
+  ASYNC_UPLOAD:
+    description: 'Enable async upload'
+    required: false
+    default: 'false'
+  SUCCESS_CHECK_TIMEOUT:
+    description: 'Timeout for success check in seconds'
     required: false
     default: '6'
-  POLL_PACKAGE:
-    description: 'Name of a specific package to poll (optional)'
+  SUCCESS_CHECK_DELAY:
+    description: 'Delay between success checks in seconds'
+    required: false
+    default: '30'
+  SUCCESS_CHECK_PACKAGE_NAME:
+    description: 'Name of the package to check for success'
     required: false
     default: ''
 
