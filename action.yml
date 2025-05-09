@@ -3,33 +3,33 @@ description: 'Prepares and uploads packages to a Martini instance'
 author: 'Rafal Janicki <rafal.janicki@torocloud.com>'
 
 inputs:
-  BASE_URL:
+  base_url:
     description: 'Base URL of the Martini instance'
     required: true
-  MARTINI_ACCESS_TOKEN:
+  martini_access_token:
     description: 'Access token of the Martini instance'
     required: true
-  PACKAGE_DIR:
+  package_dir:
     description: 'Path to the directory containing package folders'
     required: false
     default: 'packages'
-  PACKAGE_NAME_PATTERN:
+  package_name_pattern:
     description: 'Regex pattern to match package directories'
     required: false
     default: '.*'
-  ASYNC_UPLOAD:
+  async_upload:
     description: 'Enable async upload'
     required: false
     default: 'false'
-  SUCCESS_CHECK_TIMEOUT:
+  success_check_timeout:
     description: 'Timeout for success check in seconds'
     required: false
     default: '6'
-  SUCCESS_CHECK_DELAY:
+  success_check_delay:
     description: 'Delay between success checks in seconds'
     required: false
     default: '30'
-  SUCCESS_CHECK_PACKAGE_NAME:
+  success_check_package_name:
     description: 'Name of the package to check for success'
     required: false
     default: ''

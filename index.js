@@ -11,14 +11,14 @@ function log(level, message) {
 
 async function main() {
   try {
-    const BASE_URL = core.getInput('BASE_URL');
-    const MARTINI_ACCESS_TOKEN = core.getInput('MARTINI_ACCESS_TOKEN');
-    const PACKAGE_DIR = core.getInput('PACKAGE_DIR') || 'packages';
-    const PACKAGE_NAME_PATTERN = core.getInput('PACKAGE_NAME_PATTERN') || '.*';
-    const ASYNC_UPLOAD = core.getInput('ASYNC_UPLOAD') === 'true';
-    const SUCCESS_CHECK_TIMEOUT = parseInt(core.getInput('SUCCESS_CHECK_TIMEOUT'), 10) || 6;
-    const SUCCESS_CHECK_DELAY = parseInt(core.getInput('SUCCESS_CHECK_DELAY'), 10) || 30;
-    const SUCCESS_CHECK_PACKAGE_NAME = core.getInput('SUCCESS_CHECK_PACKAGE_NAME') || '';
+    const BASE_URL = core.getInput('base_url');
+    const MARTINI_ACCESS_TOKEN = core.getInput('martini_access_token');
+    const PACKAGE_DIR = core.getInput('package_dir') || 'packages';
+    const PACKAGE_NAME_PATTERN = core.getInput('package_name_pattern') || '.*';
+    const ASYNC_UPLOAD = core.getInput('async_upload') === 'true';
+    const SUCCESS_CHECK_TIMEOUT = parseInt(core.getInput('success_check_timeout'), 10) || 6;
+    const SUCCESS_CHECK_DELAY = parseInt(core.getInput('success_check_delay'), 10) || 30;
+    const SUCCESS_CHECK_PACKAGE_NAME = core.getInput('success_check_package_name') || '';
 
     log('INFO', `BASE_URL: ${BASE_URL}`);
     log('INFO', `PACKAGE_DIR: ${PACKAGE_DIR}`);
