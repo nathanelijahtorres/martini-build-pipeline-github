@@ -26889,14 +26889,17 @@ async function main() {
 
     const uploadSuccess = (code) => code === '504' || (code >= '200' && code < '300');
 
-    if ((ASYNC_UPLOAD && uploadSuccess(httpCode)) || (!ASYNC_UPLOAD && httpCode >= '200' && httpCode < '300')) {
-      log('INFO', `Package upload successful. HTTP code: ${httpCode}`);
-      console.log(fs.readFileSync('response_body.log', 'utf8'));
-    } else {
-      log('ERROR', `Package upload failed with HTTP code: ${httpCode}`);
-      console.error(fs.readFileSync('response_body.log', 'utf8'));
-      process.exit(1);
-    }
+    if (ASYNC_UPLOAD && uploadSuccess(httpCode)) {
+        log('INFO', `Package upload successful. HTTP code: ${httpCode}`);
+      } else if (!ASYNC_UPLOAD && httpCode >= 200 && httpCode < 300) {
+        log('INFO', `Package upload successful. HTTP code: ${httpCode}`);
+        console.log(fs.readFileSync('response_body.log', 'utf8'));
+        process.exit(0);
+      } else {
+        log('ERROR', `Package upload failed with HTTP code: ${httpCode}`);
+        console.error(fs.readFileSync('response_body.log', 'utf8'));
+        process.exit(1);
+      }      
 
     if (!ASYNC_UPLOAD) return;
 
