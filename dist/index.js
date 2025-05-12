@@ -26844,10 +26844,12 @@ async function main() {
       log('INFO', `SUCCESS_CHECK_PACKAGE_NAME: ${SUCCESS_CHECK_PACKAGE_NAME}`);
     }
 
-    // Check if host is resolvable
-    const { hostname } = new URL(BASE_URL);
+    const { hostname, protocol } = new URL(BASE_URL);
+    const httpLib = protocol === 'https:' ? __nccwpck_require__(5692) : __nccwpck_require__(8611);
+
     await new Promise((resolve, reject) => {
-      https.get({ hostname }, res => resolve()).on('error', () => reject(`Cannot resolve host ${hostname}`));
+      httpLib.get({ hostname }, res => resolve())
+        .on('error', () => reject(`Cannot resolve host ${hostname}`));
     }).catch(err => {
       log('ERROR', err);
       process.exit(1);
