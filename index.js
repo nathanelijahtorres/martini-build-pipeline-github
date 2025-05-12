@@ -30,10 +30,12 @@ async function main() {
       log('INFO', `SUCCESS_CHECK_PACKAGE_NAME: ${SUCCESS_CHECK_PACKAGE_NAME}`);
     }
 
-    // Check if host is resolvable
-    const { hostname } = new URL(BASE_URL);
+    const { hostname, protocol } = new URL(BASE_URL);
+    const httpLib = protocol === 'https:' ? require('https') : require('http');
+
     await new Promise((resolve, reject) => {
-      https.get({ hostname }, res => resolve()).on('error', () => reject(`Cannot resolve host ${hostname}`));
+      httpLib.get({ hostname }, res => resolve())
+        .on('error', () => reject(`Cannot resolve host ${hostname}`));
     }).catch(err => {
       log('ERROR', err);
       process.exit(1);
