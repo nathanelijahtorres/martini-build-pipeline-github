@@ -53,7 +53,7 @@ async function main() {
 
     if (dirs.length === 0) {
       log('INFO', 'No matching packages to upload.');
-      process.exit(0);
+      process.exit(1);
     }
 
     const zipPath = path.join(process.env.GITHUB_WORKSPACE || '.', 'packages.zip');
