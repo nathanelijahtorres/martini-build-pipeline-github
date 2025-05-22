@@ -104,8 +104,6 @@ async function main() {
       };
     });
 
-    core.setOutput('packages', JSON.stringify(outputPackages));
-
     outputPackages.forEach(pkg => {
       const key = sanitizeKey(pkg.name);
       core.setOutput(`${key}_id`, pkg.id);
