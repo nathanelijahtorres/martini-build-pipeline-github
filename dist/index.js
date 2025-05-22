@@ -26893,7 +26893,7 @@ async function main() {
     ]);
     const httpCode = uploadResult.stdout.toString().trim().slice(-3);
 
-    let uploadResponse = {};
+    let uploadResponse = [];
     try {
       const responseText = fs.readFileSync('response_body.log', 'utf8');
       uploadResponse = JSON.parse(responseText);
@@ -26903,16 +26903,20 @@ async function main() {
 
     const uploadSuccess = (code) => code === '504' || (code >= '200' && code < '300');
 
-    if (!uploadResponse || typeof uploadResponse !== 'object') {
-      uploadResponse = {};
+    if (!Array.isArray(uploadResponse)) {
+      uploadResponse = [];
     }
 
-    const outputPackages = dirs.map(name => ({
-      name,
-      id: uploadResponse.id || '',
-      status: uploadResponse.status || '',
-      version: uploadResponse.version || '',
-    }));
+    // Map each package dir to the corresponding uploaded package info by name
+    const outputPackages = dirs.map(name => {
+      const pkgInfo = uploadResponse.find(p => p.name === name) || {};
+      return {
+        name,
+        id: pkgInfo.id || '',
+        status: pkgInfo.status || '',
+        version: pkgInfo.version || '',
+      };
+    });
 
     core.setOutput('packages', JSON.stringify(outputPackages));
 
