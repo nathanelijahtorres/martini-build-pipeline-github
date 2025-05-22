@@ -36,8 +36,7 @@ inputs:
 
 outputs:
   packages:
-    description: 'JSON array of uploaded packages with id, name, status, and version'
-
+    description: 'List of uploaded packages with id, name, status, and version'
 
 runs:
   using: 'node20'

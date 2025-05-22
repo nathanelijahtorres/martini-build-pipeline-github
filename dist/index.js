@@ -26823,6 +26823,10 @@ function log(level, message) {
   console.log(`[${timestamp}] [${level}] ${message}`);
 }
 
+function sanitizeKey(name) {
+  return name.replace(/[^a-zA-Z0-9_]/g, '_');
+}
+
 async function main() {
   try {
     const BASE_URL = core.getInput('base_url');
@@ -26911,6 +26915,14 @@ async function main() {
     }));
 
     core.setOutput('packages', JSON.stringify(outputPackages));
+
+    outputPackages.forEach(pkg => {
+      const key = sanitizeKey(pkg.name);
+      core.setOutput(`${key}_id`, pkg.id);
+      core.setOutput(`${key}_name`, pkg.name);
+      core.setOutput(`${key}_status`, pkg.status);
+      core.setOutput(`${key}_version`, pkg.version);
+    });
 
     if (ASYNC_UPLOAD && uploadSuccess(httpCode)) {
       log('INFO', `Package upload successful. HTTP code: ${httpCode}`);
