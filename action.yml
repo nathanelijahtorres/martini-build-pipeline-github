@@ -34,6 +34,11 @@ inputs:
     required: false
     default: ''
 
+outputs:
+  packages:
+    description: 'JSON array of uploaded packages with id, name, status, and version'
+
+
 runs:
   using: 'node20'
   main: 'dist/index.js'
