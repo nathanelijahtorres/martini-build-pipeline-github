@@ -26823,6 +26823,10 @@ function log(level, message) {
   console.log(`[${timestamp}] [${level}] ${message}`);
 }
 
+function sanitizeKey(name) {
+  return name.replace(/[^a-zA-Z0-9_]/g, '_');
+}
+
 async function main() {
   try {
     const BASE_URL = core.getInput('base_url');
@@ -26834,14 +26838,14 @@ async function main() {
     const SUCCESS_CHECK_DELAY = parseInt(core.getInput('success_check_delay'), 10) || 30;
     const SUCCESS_CHECK_PACKAGE_NAME = core.getInput('success_check_package_name') || '';
 
-    log('INFO', `BASE_URL: ${BASE_URL}`);
-    log('INFO', `PACKAGE_DIR: ${PACKAGE_DIR}`);
-    log('INFO', `PACKAGE_NAME_PATTERN: ${PACKAGE_NAME_PATTERN}`);
-    log('INFO', `ASYNC_UPLOAD: ${ASYNC_UPLOAD}`);
+    console.log(`BASE_URL: ${BASE_URL}`);
+    console.log(`PACKAGE_DIR: ${PACKAGE_DIR}`);
+    console.log(`PACKAGE_NAME_PATTERN: ${PACKAGE_NAME_PATTERN}`);
+    console.log(`ASYNC_UPLOAD: ${ASYNC_UPLOAD}`);
     if (ASYNC_UPLOAD) {
-      log('INFO', `SUCCESS_CHECK_TIMEOUT: ${SUCCESS_CHECK_TIMEOUT}`);
-      log('INFO', `SUCCESS_CHECK_DELAY: ${SUCCESS_CHECK_DELAY}`);
-      log('INFO', `SUCCESS_CHECK_PACKAGE_NAME: ${SUCCESS_CHECK_PACKAGE_NAME}`);
+      console.log(`SUCCESS_CHECK_TIMEOUT: ${SUCCESS_CHECK_TIMEOUT}`);
+      console.log(`SUCCESS_CHECK_DELAY: ${SUCCESS_CHECK_DELAY}`);
+      console.log(`SUCCESS_CHECK_PACKAGE_NAME: ${SUCCESS_CHECK_PACKAGE_NAME}`);
     }
 
     const { hostname, protocol } = new URL(BASE_URL);
@@ -26889,19 +26893,49 @@ async function main() {
     ]);
     const httpCode = uploadResult.stdout.toString().trim().slice(-3);
 
+    let uploadResponse = [];
+    try {
+      const responseText = fs.readFileSync('response_body.log', 'utf8');
+      uploadResponse = JSON.parse(responseText);
+    } catch (_) {
+      log('WARN', 'Failed to parse upload response JSON.');
+    }
+
     const uploadSuccess = (code) => code === '504' || (code >= '200' && code < '300');
 
+    if (!Array.isArray(uploadResponse)) {
+      uploadResponse = [];
+    }
+
+    const outputPackages = dirs.map(name => {
+      const pkgInfo = uploadResponse.find(p => p.name === name) || {};
+      return {
+        name,
+        id: pkgInfo.id || '',
+        status: pkgInfo.status || '',
+        version: pkgInfo.version || '',
+      };
+    });
+
+    outputPackages.forEach(pkg => {
+      const key = sanitizeKey(pkg.name);
+      core.setOutput(`${key}_id`, pkg.id);
+      core.setOutput(`${key}_name`, pkg.name);
+      core.setOutput(`${key}_status`, pkg.status);
+      core.setOutput(`${key}_version`, pkg.version);
+    });
+
     if (ASYNC_UPLOAD && uploadSuccess(httpCode)) {
-        log('INFO', `Package upload successful. HTTP code: ${httpCode}`);
-      } else if (!ASYNC_UPLOAD && httpCode >= 200 && httpCode < 300) {
-        log('INFO', `Package upload successful. HTTP code: ${httpCode}`);
-        console.log(fs.readFileSync('response_body.log', 'utf8'));
-        process.exit(0);
-      } else {
-        log('ERROR', `Package upload failed with HTTP code: ${httpCode}`);
-        console.error(fs.readFileSync('response_body.log', 'utf8'));
-        process.exit(1);
-      }      
+      log('INFO', `Package upload successful. HTTP code: ${httpCode}`);
+    } else if (!ASYNC_UPLOAD && httpCode >= 200 && httpCode < 300) {
+      log('INFO', `Package upload successful. HTTP code: ${httpCode}`);
+      console.log(fs.readFileSync('response_body.log', 'utf8'));
+      process.exit(0);
+    } else {
+      log('ERROR', `Package upload failed with HTTP code: ${httpCode}`);
+      console.error(fs.readFileSync('response_body.log', 'utf8'));
+      process.exit(1);
+    }
 
     if (!ASYNC_UPLOAD) return;
 
