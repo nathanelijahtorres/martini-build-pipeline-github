@@ -1,8 +1,11 @@
 const core = require('@actions/core');
 const fs = require('fs');
 const path = require('path');
-const { execSync, spawnSync } = require('child_process');
 const https = require('https');
+const http = require('http');
+const archiver = require('archiver');
+const fetch = require('node-fetch');
+const FormData = require('form-data');
 
 function log(level, message) {
   const timestamp = new Date().toISOString().replace('T', ' ').replace('Z', '');
@@ -13,10 +16,111 @@ function sanitizeKey(name) {
   return name.replace(/[^a-zA-Z0-9_]/g, '_');
 }
 
+async function checkHostReachable(hostname, protocol) {
+  const lib = protocol === 'https:' ? https : http;
+  return new Promise((resolve, reject) => {
+    const req = lib.request({ method: 'HEAD', hostname, timeout: 5000 }, res => {
+      resolve(true);
+    });
+    req.on('error', () => reject(`Cannot resolve host ${hostname}`));
+    req.on('timeout', () => {
+      req.destroy();
+      reject(`Timeout trying to reach host ${hostname}`);
+    });
+    req.end();
+  });
+}
+
+async function createZip(packageDir, dirs, outputPath) {
+  return new Promise((resolve, reject) => {
+    const output = fs.createWriteStream(outputPath);
+    const archive = archiver('zip', { zlib: { level: 9 } });
+
+    output.on('close', () => resolve());
+    archive.on('error', err => reject(err));
+
+    archive.pipe(output);
+
+    for (const dir of dirs) {
+      archive.directory(path.join(packageDir, dir), dir);
+    }
+
+    archive.finalize();
+  });
+}
+
+async function uploadZip(baseUrl, accessToken, zipPath) {
+  const form = new FormData();
+  form.append('file', fs.createReadStream(zipPath), {
+    contentType: 'application/zip',
+    filename: path.basename(zipPath),
+  });
+
+  const url = `${baseUrl}/esbapi/packages/upload?stateOnCreate=STARTED&replaceExisting=true`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      ...form.getHeaders(),
+    },
+    body: form,
+  });
+
+  const text = await response.text();
+
+  let json;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    throw new Error(`Failed to parse upload response JSON: ${text}`);
+  }
+
+  if (!response.ok && response.status !== 504) {
+    throw new Error(`Upload failed with status ${response.status}: ${text}`);
+  }
+
+  return { json, httpCode: response.status };
+}
+
+async function checkPackageStarted(baseUrl, accessToken, packageName, timeoutCount, delaySeconds) {
+  const url = `${baseUrl}/esbapi/packages/${packageName}?version=2`;
+
+  for (let i = 0; i < timeoutCount; i++) {
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        log('WARN', `Polling package ${packageName} failed with status ${response.status}`);
+      } else {
+        const json = await response.json();
+        if (json.status === 'STARTED') {
+          fs.appendFileSync('results.log', JSON.stringify(json, null, 2) + '\n');
+          return;
+        }
+      }
+    } catch (e) {
+      log('WARN', `Error polling package ${packageName}: ${e.message}`);
+    }
+
+    log('INFO', `Waiting for ${packageName}... (${i + 1}/${timeoutCount})`);
+    await new Promise(r => setTimeout(r, delaySeconds * 1000));
+  }
+
+  log('ERROR', `Package '${packageName}' timed out.`);
+  fs.appendFileSync('results.log', `Package '${packageName}' timed out.\n`);
+}
+
 async function main() {
   try {
-    const BASE_URL = core.getInput('base_url');
-    const MARTINI_ACCESS_TOKEN = core.getInput('access_token');
+    const BASE_URL = core.getInput('base_url', { required: true });
+    const MARTINI_ACCESS_TOKEN = core.getInput('access_token', { required: true });
     const PACKAGE_DIR = core.getInput('package_dir') || 'packages';
     const PACKAGE_NAME_PATTERN = core.getInput('package_name_pattern') || '.*';
     const ASYNC_UPLOAD = core.getInput('async_upload') === 'true';
@@ -28,19 +132,16 @@ async function main() {
     console.log(`PACKAGE_DIR: ${PACKAGE_DIR}`);
     console.log(`PACKAGE_NAME_PATTERN: ${PACKAGE_NAME_PATTERN}`);
     console.log(`ASYNC_UPLOAD: ${ASYNC_UPLOAD}`);
+
     if (ASYNC_UPLOAD) {
       console.log(`SUCCESS_CHECK_TIMEOUT: ${SUCCESS_CHECK_TIMEOUT}`);
       console.log(`SUCCESS_CHECK_DELAY: ${SUCCESS_CHECK_DELAY}`);
       console.log(`SUCCESS_CHECK_PACKAGE_NAME: ${SUCCESS_CHECK_PACKAGE_NAME}`);
     }
 
-    const { hostname, protocol } = new URL(BASE_URL);
-    const httpLib = protocol === 'https:' ? require('https') : require('http');
-
-    await new Promise((resolve, reject) => {
-      httpLib.get({ hostname }, res => resolve())
-        .on('error', () => reject(`Cannot resolve host ${hostname}`));
-    }).catch(err => {
+    
+    const url = new URL(BASE_URL);
+    await checkHostReachable(url.hostname, url.protocol).catch(err => {
       log('ERROR', err);
       process.exit(1);
     });
@@ -61,35 +162,25 @@ async function main() {
     }
 
     const zipPath = path.join(process.env.GITHUB_WORKSPACE || '.', 'packages.zip');
-    const zipArgs = ['-qr', zipPath, ...dirs];
+
     log('INFO', 'Creating zip with matching packages...');
-    const zipResult = spawnSync('zip', zipArgs, { cwd: PACKAGE_DIR });
-    if (zipResult.status !== 0) {
-      log('ERROR', 'Failed to zip packages.');
+    await createZip(PACKAGE_DIR, dirs, zipPath);
+
+    log('INFO', 'Uploading packages to Martini...');
+    let uploadResult;
+    try {
+      uploadResult = await uploadZip(BASE_URL, MARTINI_ACCESS_TOKEN, zipPath);
+    } catch (e) {
+      log('ERROR', e.message);
       process.exit(1);
     }
 
-    log('INFO', 'Uploading packages to Martini...');
-    const uploadResult = spawnSync('curl', [
-      '--silent', '--show-error', '--write-out', '%{http_code}', '--output', 'response_body.log',
-      `${BASE_URL}/esbapi/packages/upload?stateOnCreate=STARTED&replaceExisting=true`,
-      '-H', 'accept:application/json',
-      '-F', `file=@${zipPath};type=application/zip`,
-      '-H', `Authorization:Bearer ${MARTINI_ACCESS_TOKEN}`
-    ]);
-    const httpCode = uploadResult.stdout.toString().trim().slice(-3);
+    let { json: uploadResponse, httpCode } = uploadResult;
 
-    let uploadResponse = [];
-    try {
-      const responseText = fs.readFileSync('response_body.log', 'utf8');
-      uploadResponse = JSON.parse(responseText);
-    } catch (_) {
-      log('WARN', 'Failed to parse upload response JSON.');
-    }
-
-    const uploadSuccess = (code) => code === '504' || (code >= '200' && code < '300');
+    const uploadSuccess = (code) => code === 504 || (code >= 200 && code < 300);
 
     if (!Array.isArray(uploadResponse)) {
+      log('WARN', 'Upload response is not an array. Using empty array as fallback.');
       uploadResponse = [];
     }
 
@@ -115,49 +206,26 @@ async function main() {
       log('INFO', `Package upload successful. HTTP code: ${httpCode}`);
     } else if (!ASYNC_UPLOAD && httpCode >= 200 && httpCode < 300) {
       log('INFO', `Package upload successful. HTTP code: ${httpCode}`);
-      console.log(fs.readFileSync('response_body.log', 'utf8'));
+      console.log(JSON.stringify(uploadResponse, null, 2));
       process.exit(0);
     } else {
       log('ERROR', `Package upload failed with HTTP code: ${httpCode}`);
-      console.error(fs.readFileSync('response_body.log', 'utf8'));
+      console.error(JSON.stringify(uploadResponse, null, 2));
       process.exit(1);
     }
 
     if (!ASYNC_UPLOAD) return;
 
-    const checkPackageStarted = async (packageName) => {
-      for (let i = 0; i < SUCCESS_CHECK_TIMEOUT; i++) {
-        const res = spawnSync('curl', [
-          '-s',
-          '-X', 'GET',
-          `${BASE_URL}/esbapi/packages/${packageName}?version=2`,
-          '-H', 'accept:application/json',
-          '-H', `Authorization:Bearer ${MARTINI_ACCESS_TOKEN}`
-        ]);
-        try {
-          const json = JSON.parse(res.stdout.toString());
-          if (json.status === 'STARTED') {
-            fs.appendFileSync('results.log', JSON.stringify(json, null, 2) + '\n');
-            return;
-          }
-        } catch (_) {}
-
-        log('INFO', `Waiting for ${packageName}... (${i + 1}/${SUCCESS_CHECK_TIMEOUT})`);
-        await new Promise(r => setTimeout(r, SUCCESS_CHECK_DELAY * 1000));
-      }
-      log('ERROR', `Package '${packageName}' timed out.`);
-      fs.appendFileSync('results.log', `Package '${packageName}' timed out.\n`);
-    };
-
-    const packagesToCheck = SUCCESS_CHECK_PACKAGE_NAME
-      ? [SUCCESS_CHECK_PACKAGE_NAME]
-      : dirs;
+    const packagesToCheck = SUCCESS_CHECK_PACKAGE_NAME ? [SUCCESS_CHECK_PACKAGE_NAME] : dirs;
 
     log('INFO', `Checking ${packagesToCheck.length} package(s) for startup...`);
-    await Promise.all(packagesToCheck.map(checkPackageStarted));
+    await Promise.all(packagesToCheck.map(pkgName =>
+      checkPackageStarted(BASE_URL, MARTINI_ACCESS_TOKEN, pkgName, SUCCESS_CHECK_TIMEOUT, SUCCESS_CHECK_DELAY)
+    ));
 
     log('INFO', 'Done checking packages:');
     console.log(fs.readFileSync('results.log', 'utf8'));
+
   } catch (error) {
     core.setFailed(error.message);
   }
