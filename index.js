@@ -119,7 +119,12 @@ async function checkPackageStarted(baseUrl, accessToken, packageName, timeoutCou
 
 async function main() {
   try {
-    const BASE_URL = core.getInput('base_url', { required: true });
+    let BASE_URL = core.getInput('base_url', { required: true }).trim();
+    BASE_URL = BASE_URL.replace(/\/+$/, '');
+    if (!/^https?:\/\//i.test(BASE_URL)) {
+      BASE_URL = `https://${BASE_URL}`;
+    }
+
     const MARTINI_ACCESS_TOKEN = core.getInput('access_token', { required: true });
     const PACKAGE_DIR = core.getInput('package_dir') || 'packages';
     const PACKAGE_NAME_PATTERN = core.getInput('package_name_pattern') || '.*';
@@ -139,7 +144,6 @@ async function main() {
       console.log(`SUCCESS_CHECK_PACKAGE_NAME: ${SUCCESS_CHECK_PACKAGE_NAME}`);
     }
 
-    
     const url = new URL(BASE_URL);
     await checkHostReachable(url.hostname, url.protocol).catch(err => {
       log('ERROR', err);
@@ -157,7 +161,7 @@ async function main() {
     });
 
     if (dirs.length === 0) {
-      log('INFO', 'No matching packages to upload.');
+      log('ERROR', 'No matching packages to upload.');
       process.exit(1);
     }
 
