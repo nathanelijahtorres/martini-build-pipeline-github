@@ -161,7 +161,7 @@ async function main() {
     });
 
     if (dirs.length === 0) {
-      log('ERROR', 'No matching packages to upload.');
+      log('INFO', 'No matching packages to upload.');
       process.exit(1);
     }
 
